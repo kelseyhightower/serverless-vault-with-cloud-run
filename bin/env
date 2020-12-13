@@ -1,0 +1,6 @@
+export PROJECT_ID=$(gcloud config get-value project)
+export VAULT_SERVICE_URL=$(gcloud run services describe vault-server \
+  --platform managed \
+  --region us-west1 \
+  --format 'value(status.url)')
+export VAULT_ADDR=${VAULT_SERVICE_URL}

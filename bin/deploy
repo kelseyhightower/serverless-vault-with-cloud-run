@@ -1,0 +1,18 @@
+#!/bin/bash
+
+PROJECT_ID=$(gcloud config get-value project)
+
+gcloud beta run deploy vault-server \
+  --allow-unauthenticated \
+  --concurrency 50 \
+  --cpu 2 \
+  --image gcr.io/${PROJECT_ID}/vault:run \
+  --memory '2G' \
+  --min-instances 1 \
+  --max-instances 1 \
+  --platform managed \
+  --port 8200 \
+  --service-account "vault-server@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --set-env-vars="GOOGLE_PROJECT=${PROJECT_ID},GOOGLE_STORAGE_BUCKET=${PROJECT_ID}-vault-data" \
+  --timeout 300 \
+  --region us-west1
