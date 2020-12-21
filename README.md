@@ -40,7 +40,7 @@ PROJECT_ID=$(gcloud config get-value project)
 > `PROJECT_ID` holds the project id generated at the start of the tutorial.
 
 ```
-GCS_BUCKET_NAME="gs://${PROJECT_ID}-data"
+GCS_BUCKET_NAME="${PROJECT_ID}-data"
 ```
 
 > `GCS_BUCKET_NAME` holds the Google Cloud Storage bucket name used to persist Vault's data.
@@ -70,7 +70,7 @@ gcloud services enable --async \
 Create a GCS storage bucket to hold Vault's encrypted data:
 
 ```
-gsutil mb ${GCS_BUCKET_NAME}
+gsutil mb gs://${GCS_BUCKET_NAME}
 ```
 
 ```
@@ -88,7 +88,7 @@ Grant the necessary permissions on GCS storage bucket for the `vault-server` ser
 ```
 gsutil iam ch \
   serviceAccount:${SERVICE_ACCOUNT_EMAIL}:objectAdmin \
-  ${GCS_BUCKET_NAME}
+  gs://${GCS_BUCKET_NAME}
 ```
 
 Create a Cloud KMS key ring that will be used to hold Vault `seal` encryption key:
@@ -221,7 +221,7 @@ curl -s -X PUT \
 At this point the Vault server has been initialized. If you list the GCS storage bucket you will see a new set of directories created by Vault:
 
 ```
-gsutil ls ${GCS_BUCKET_NAME}
+gsutil ls gs://${GCS_BUCKET_NAME}
 ```
 ```
 gs://vault-on-cloud-run-XXXXXX-data/core/
