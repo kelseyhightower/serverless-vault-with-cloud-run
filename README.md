@@ -64,23 +64,14 @@ REGION=us-west1
 > `REGION` holds the region in which to deploy the vault-server.
 
 
-Enable the Cloud KMS, Cloud Run, and Cloud Storage APIs:
+Enable the Cloud KMS, Cloud Run, Cloud Storage, and Secret Manager APIs:
 
 ```
 gcloud services enable --async \
   cloudkms.googleapis.com \
   run.googleapis.com \
+  secretmanager.googleapis.com \
   storage.googleapis.com
-```
-
-Create a GCS storage bucket to hold Vault's encrypted data:
-
-```
-gsutil mb gs://${GCS_BUCKET_NAME}
-```
-
-```
-Creating gs://vault-on-cloud-run-XXXXXX-data/...
 ```
 
 Create a service account for the Vault server:
@@ -89,12 +80,37 @@ Create a service account for the Vault server:
 gcloud iam service-accounts create vault-server
 ```
 
+Create a GCS storage bucket to hold Vault's encrypted data:
+
+```
+gsutil mb gs://${GCS_BUCKET_NAME}
+```
+```
+Creating gs://vault-on-cloud-run-XXXXXX-data/...
+```
+
 Grant the necessary permissions on GCS storage bucket for the `vault-server` service account:
 
 ```
 gsutil iam ch \
   serviceAccount:${SERVICE_ACCOUNT_EMAIL}:objectAdmin \
   gs://${GCS_BUCKET_NAME}
+```
+
+Store the vault server config file in [Secret Manager](https://cloud.google.com/secret-manager):
+
+```
+gcloud secrets create vault-server-config \
+  --replication-policy automatic \
+  --data-file vault-server.hcl
+```
+
+Grant access to the `vault-server-config` secret to the `vault-server` service account:
+
+```
+gcloud secrets add-iam-policy-binding vault-server-config \
+    --member "serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
+    --role "roles/secretmanager.secretAccessor"
 ```
 
 Create a Cloud KMS key ring that will be used to hold Vault `seal` encryption key:
@@ -132,7 +148,7 @@ gcloud beta run deploy vault-server \
   --no-allow-unauthenticated \
   --concurrency 50 \
   --cpu 2 \
-  --image gcr.io/hightowerlabs/vault:run \
+  --image gcr.io/hightowerlabs/vault:1.7.1 \
   --memory '2G' \
   --min-instances 1 \
   --max-instances 1 \
@@ -140,6 +156,7 @@ gcloud beta run deploy vault-server \
   --port 8200 \
   --service-account ${SERVICE_ACCOUNT_EMAIL} \
   --set-env-vars="GOOGLE_PROJECT=${PROJECT_ID},GOOGLE_STORAGE_BUCKET=${GCS_BUCKET_NAME}" \
+  --set-secrets="/etc/vault/config.hcl=vault-server-config:1" \
   --timeout 300 \
   --region ${REGION}
 ```
@@ -182,7 +199,7 @@ curl -s -X GET \
   "n": 0,
   "progress": 0,
   "nonce": "",
-  "version": "1.6.0",
+  "version": "1.7.1",
   "migration": false,
   "recovery_seal": true,
   "storage_type": "gcs"
@@ -244,7 +261,7 @@ gcloud beta run deploy vault-server \
   --allow-unauthenticated \
   --concurrency 50 \
   --cpu 2 \
-  --image gcr.io/hightowerlabs/vault:run \
+  --image gcr.io/hightowerlabs/vault:1.7.1 \
   --memory '2G' \
   --min-instances 1 \
   --max-instances 1 \
@@ -252,6 +269,7 @@ gcloud beta run deploy vault-server \
   --port 8200 \
   --service-account ${SERVICE_ACCOUNT_EMAIL} \
   --set-env-vars="GOOGLE_PROJECT=${PROJECT_ID},GOOGLE_STORAGE_BUCKET=${GCS_BUCKET_NAME}" \
+  --set-secrets="/etc/vault/config.hcl=vault-server-config:1" \
   --timeout 300 \
   --region ${REGION}
 ```
@@ -276,13 +294,13 @@ vault version
 ```
 
 ```
-Vault v1.6.0 (7ce0bd9691998e0443bc77e98b1e2a4ab1e965d4)
+Vault v1.7.1 (917142287996a005cb1ed9d96d00d06a0590e44e)
 ```
 
 Configure the vault CLI to use the `vault-server` Cloud Run service URL by setting the `VAULT_ADDR` environment variable:
 
 ```
-VAULT_ADDR=$(gcloud run services describe vault-server \
+export VAULT_ADDR=$(gcloud run services describe vault-server \
   --platform managed \
   --region ${REGION} \
   --format 'value(status.url)')
@@ -302,7 +320,7 @@ Initialized              true
 Sealed                   false
 Total Recovery Shares    1
 Threshold                1
-Version                  1.6.0
+Version                  1.7.1
 Storage Type             gcs
 Cluster Name             vault-cluster-XXXXXXXX
 Cluster ID               XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX

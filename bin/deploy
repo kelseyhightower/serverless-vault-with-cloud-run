@@ -6,7 +6,7 @@ gcloud beta run deploy vault-server \
   --allow-unauthenticated \
   --concurrency 50 \
   --cpu 2 \
-  --image gcr.io/${PROJECT_ID}/vault:run \
+  --image gcr.io/${PROJECT_ID}/vault:1.7.1 \
   --memory '2G' \
   --min-instances 1 \
   --max-instances 1 \
@@ -14,5 +14,6 @@ gcloud beta run deploy vault-server \
   --port 8200 \
   --service-account "vault-server@${PROJECT_ID}.iam.gserviceaccount.com" \
   --set-env-vars="GOOGLE_PROJECT=${PROJECT_ID},GOOGLE_STORAGE_BUCKET=${PROJECT_ID}-vault-data" \
+  --set-secrets="/etc/vault/config.hcl:vault-server-config:1" \
   --timeout 300 \
   --region us-west1
