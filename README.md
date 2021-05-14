@@ -109,8 +109,8 @@ Grant access to the `vault-server-config` secret to the `vault-server` service a
 
 ```
 gcloud secrets add-iam-policy-binding vault-server-config \
-    --member "serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
-    --role "roles/secretmanager.secretAccessor"
+  --member "serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
+  --role "roles/secretmanager.secretAccessor"
 ```
 
 Create a Cloud KMS key ring that will be used to hold Vault `seal` encryption key:
