@@ -2,7 +2,7 @@
 
 PROJECT_ID=$(gcloud config get-value project)
 
-gcloud beta run deploy vault-server \
+gcloud alpha run deploy vault-server \
   --allow-unauthenticated \
   --concurrency 50 \
   --cpu 2 \
@@ -10,6 +10,7 @@ gcloud beta run deploy vault-server \
   --memory '2G' \
   --min-instances 1 \
   --max-instances 1 \
+  --no-cpu-throttling \
   --platform managed \
   --port 8200 \
   --service-account "vault-server@${PROJECT_ID}.iam.gserviceaccount.com" \
