@@ -144,7 +144,7 @@ Deploy the `vault-server` Cloud Run service:
 > The initial deployment will be made private to prevent someone else from initializing the Vault server. Clients will need to [provide authentication credentials](https://cloud.google.com/run/docs/authenticating/developers) that will be validated by the Cloud Run control plane. After Vault has been initialized the Cloud Run deployment will be updated to bypass Cloud Run authentication and delegate the authentication to Vault. 
 
 ```
-gcloud alpha run deploy vault-server \
+gcloud beta run deploy vault-server \
   --no-allow-unauthenticated \
   --concurrency 50 \
   --cpu 2 \
@@ -258,7 +258,7 @@ Now that Vault has been initialized make the `vault-server` service [public](htt
 > Requests to Vault will no longer be authenticated by the Cloud Run control plane. Requests will be authenticated directly by Vault. 
 
 ```
-gcloud alpha run deploy vault-server \
+gcloud beta run deploy vault-server \
   --allow-unauthenticated \
   --concurrency 50 \
   --cpu 2 \
