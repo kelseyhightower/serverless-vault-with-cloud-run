@@ -15,6 +15,6 @@ gcloud alpha run deploy vault-server \
   --port 8200 \
   --service-account "vault-server@${PROJECT_ID}.iam.gserviceaccount.com" \
   --set-env-vars="GOOGLE_PROJECT=${PROJECT_ID},GOOGLE_STORAGE_BUCKET=${PROJECT_ID}-vault-data" \
-  --set-secrets="/etc/vault/config.hcl:vault-server-config:1" \
+  --set-secrets="/etc/vault/config.hcl=vault-server-config:1" \
   --timeout 300 \
   --region us-west1
